@@ -1,0 +1,28 @@
+1. Users
+    Register
+    Login
+    Logout
+    Profile
+        image
+        text
+        follow button
+    Feed 
+        users feed
+        users feed + who they follow feed.
+
+2. Tweets
+    Creating Tweets
+        text
+        images
+    Delete Tweets
+    Rewriting Tweets
+
+3. Following
+
+
+
+.....
+Notifications
+DM
+Hashtags
+.....
