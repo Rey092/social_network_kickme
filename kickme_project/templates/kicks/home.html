@@ -1,5 +1,61 @@
 {% extends 'kicks/base.html' %}
 
 {% block content %}
-    Welcome to KickMe
+<div class="row text-center">
+    <div class="col">
+        <h1 style="padding: 10px">Welcome to the Kick Me!</h1>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4 mx-auto col-10">
+        <form class="form" method="POST" action="create-kick">
+            {% csrf_token %}
+            <input type="hidden" value="/" name="next" />
+            <textarea class='form-control' name="content" placeholder="Your kick"></textarea>
+            <button type='submit' class='btn btn-primary'>Kick!</button>
+        </form>
+    </div>
+</div>
+
+   <div class="row" id='kicks'>Loading...</div>
+   <script>
+   const kicksElement = document.getElementById('kicks')
+   const xhr = new XMLHttpRequest()
+   const method = 'GET'
+   const url = '/kicks'
+   const responseType = 'json'
+
+   function handleLike(kick_id, currentCount){
+       console.log(kick_id, currentCount)
+       currentCount++
+       return 
+   }
+   function LikeButton(kick){
+       return "<button class='btn btn-primary' onclick=handleLike("+ kick.id + "," + kick.likes + ")>" + kick.likes + " Like</button>"
+   }
+   function formatKickElement(kick){
+       var formattedKick = "<div class='col-12 col-md-10 mx-auto border rounded py-3 mb-4 kick'><p>"+kick.id + " " + kick.content +
+       "</p><div class='btn-group'>" + LikeButton(kick) + 
+       "</div></div>"
+       return formattedKick
+   }
+
+   xhr.responseType = responseType
+   xhr.open(method, url)
+   xhr.onload = function(){
+       const serverresponse = xhr.response
+       const listedItems = serverresponse.response
+       var finalTweetStr = ""
+       for (i=0; i<listedItems.length; i++){
+           var kickObj = listedItems[i]
+           var currentItem = formatKickElement(kickObj)
+           finalTweetStr += currentItem
+   }
+   kicksElement.innerHTML = finalTweetStr
+   }
+   xhr.send()
+   </script>
 {% endblock content %}
+
+

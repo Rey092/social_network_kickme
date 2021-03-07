@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from kicks.views import home_view, kick_detail_view, kick_list_view
+from kicks.views import home_view, kick_detail_view, kick_list_view, kick_create_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home_view),
-    path('kicks/', kick_list_view),
+    path('kicks', kick_list_view),
     path('kick/<int:kick_id>', kick_detail_view),
+    path('create-kick', kick_create_view),
 ]

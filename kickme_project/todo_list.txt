@@ -15,6 +15,7 @@
         text
         images
     Delete Tweets
+    Like Tweets
     Rewriting Tweets
 
 3. Following
