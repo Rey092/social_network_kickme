@@ -9,53 +9,124 @@
 
 <div class="row mb-3">
     <div class="col-md-4 mx-auto col-10">
-        <form class="form" method="POST" action="create-kick">
+        <form class="form" id='kick-create-form' method="POST" action="create-kick">
             {% csrf_token %}
+            <div class="d-none alert alert-danger" id='tweet-create-form-error'></div>
             <input type="hidden" value="/" name="next" />
-            <textarea class='form-control' name="content" placeholder="Your kick"></textarea>
+            <textarea required='required' class='form-control' name="content" placeholder="Your kick"></textarea>
             <button type='submit' class='btn btn-primary'>Kick!</button>
         </form>
     </div>
 </div>
 
-   <div class="row" id='kicks'>Loading...</div>
-   <script>
-   const kicksElement = document.getElementById('kicks')
-   const xhr = new XMLHttpRequest()
-   const method = 'GET'
-   const url = '/kicks'
-   const responseType = 'json'
+<div class="row" id='kicks'>Loading...</div>
+<script>
 
-   function handleLike(kick_id, currentCount){
-       console.log(kick_id, currentCount)
-       currentCount++
-       return 
-   }
-   function LikeButton(kick){
-       return "<button class='btn btn-primary' onclick=handleLike("+ kick.id + "," + kick.likes + ")>" + kick.likes + " Like</button>"
-   }
-   function formatKickElement(kick){
-       var formattedKick = "<div class='col-12 col-md-10 mx-auto border rounded py-3 mb-4 kick'><p>"+kick.id + " " + kick.content +
-       "</p><div class='btn-group'>" + LikeButton(kick) + 
-       "</div></div>"
-       return formattedKick
-   }
+function handleKickFormError(msg, display){
+    var myErrorDiv = document.getElementById('tweet-create-form-error')
+    if (display === true){
+        // shpw error
+        myErrorDiv.setAttribute('class', 'alert alert-danger')
+        myErrorDiv.innerText = msg
+    } else{
+        // hide error
+        myErrorDiv.setAttribute('class', 'd-none alert alert-danger')
+    }
+}
 
-   xhr.responseType = responseType
-   xhr.open(method, url)
-   xhr.onload = function(){
-       const serverresponse = xhr.response
-       const listedItems = serverresponse.response
-       var finalTweetStr = ""
-       for (i=0; i<listedItems.length; i++){
-           var kickObj = listedItems[i]
-           var currentItem = formatKickElement(kickObj)
-           finalTweetStr += currentItem
-   }
-   kicksElement.innerHTML = finalTweetStr
-   }
-   xhr.send()
-   </script>
+function handleKickCreateFormDidSubmit(event){
+    event.preventDefault()
+    const myForm = event.target
+    const myFormData = new FormData(myForm)
+    const url = myForm.getAttribute('action')
+    const method = myForm.getAttribute('method')
+    const xhr = new XMLHttpRequest()
+    const responseType = 'json'
+    xhr.responseType = responseType
+    xhr.open(method, url)
+    xhr.setRequestHeader('HTTP_X_REQUESTED_WITH', 'XMLHttpRequest')
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+
+    xhr.onload = function(){
+        if (xhr.status === 201){
+            handleKickFormError("", false)
+            const newKick = xhr.response
+            const newKickElement = formatKickElement(newKick)
+            const ogHtml = kicksContainerElement.innerHTML 
+            kicksContainerElement.innerHTML = newKickElement + ogHtml
+            myForm.reset()
+        } else if (xhr.status === 400){
+            const errorJson = xhr.response
+            const contentError = errorJson.content
+            let contentErrorMessage;
+            if (contentError){
+                contentErrorMessage = contentError[0]
+                if (contentErrorMessage){
+                    handleKickFormError(contentErrorMessage, true)
+                } else {
+                    alert('Error occurred. Please try again')
+                }
+            } else {
+                    alert('Error occurred. Please try again')
+                }
+        } else if (xhr.status === 500){
+            alert('Server error. Please try again.')
+        }
+
+    }
+    xhr.onerror=function(){
+        alert('An error occurred. Please try again later')
+    }
+    xhr.send(myFormData)
+}
+
+const kickCreateFormElement = document.getElementById("kick-create-form")
+kickCreateFormElement.addEventListener('submit', handleKickCreateFormDidSubmit)
+
+const kicksContainerElement = document.getElementById('kicks')
+
+const loadKicks = function(kicksElement){
+    const xhr = new XMLHttpRequest()
+    const method = 'GET'
+    const url = '/kicks'
+    const responseType = 'json'
+
+    xhr.responseType = responseType
+    xhr.open(method, url)
+
+    xhr.onload = function(){
+    const serverresponse = xhr.response
+    const listedItems = serverresponse.response
+    var finalTweetStr = ""
+    for (i=0; i<listedItems.length; i++){
+        var kickObj = listedItems[i]
+        var currentItem = formatKickElement(kickObj)
+        finalTweetStr += currentItem
+        }
+kicksElement.innerHTML = finalTweetStr
+    }
+xhr.send()
+}
+
+loadKicks(kicksContainerElement)
+
+function handleLike(kick_id, currentCount){
+    console.log(kick_id, currentCount)
+    currentCount++
+    return 
+}
+function LikeButton(kick){
+    return "<button class='btn btn-primary' onclick=handleLike("+ kick.id + "," + kick.likes + ")>" + kick.likes + " Like</button>"
+}
+function formatKickElement(kick){
+    var formattedKick = "<div class='col-12 col-md-10 mx-auto border rounded py-3 mb-4 kick'><p>"+kick.id + " " + kick.content +
+    "</p><div class='btn-group'>" + LikeButton(kick) + 
+    "</div></div>"
+    return formattedKick
+}
+
+
+</script>
 {% endblock content %}
 
 
